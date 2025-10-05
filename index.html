@@ -44,12 +44,24 @@
       h1 {
         text-transform: uppercase;
         line-height: 3;
-        letter-spacing: 15%;
+        letter-spacing: 20%;
         font-size: 1em;
+        min-height: 15em;
       }
       svg {
         position: absolute;
         top: 4rem;
+      }
+      .text span {
+        opacity: 0;
+        filter: blur(2px);
+        display: inline-block;
+        transition: opacity 0.3s ease-out, filter 0.3s ease-out;
+        white-space: pre;
+      }
+      .text span.visible {
+        opacity: 1;
+        filter: blur(0px);
       }
     </style>
   </head>
@@ -80,12 +92,51 @@
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         const parts = ["hey", "@", "v7v", ".", "io"];
-        const addr = parts.join("");
         const a = document.getElementById("email");
-        a.href = "mailto:" + addr;
-        a.textContent = addr;
+        a.href = "mailto:" + parts.join("");
+        a.textContent = parts.join("");
         a.setAttribute("data-user", "hey");
         a.setAttribute("data-host", "v7v.io");
+
+        const textEl = document.querySelector(".text");
+        const lines = textEl.innerHTML.split("<br>");
+        textEl.innerHTML = "";
+
+        const allSpans = [];
+        lines.forEach((line, idx) => {
+          const lineSpans = [];
+          const trimmedLine = line.trim();
+          for (let i = 0; i < trimmedLine.length; i++) {
+            const span = document.createElement("span");
+            span.textContent = trimmedLine[i];
+            textEl.appendChild(span);
+            lineSpans.push(span);
+          }
+          allSpans.push(lineSpans);
+          if (idx < lines.length - 1)
+            textEl.appendChild(document.createElement("br"));
+        });
+
+        let lineIdx = 0,
+          charIdx = 0;
+        const charDelay = 50,
+          lineDelay = 700;
+
+        function reveal() {
+          if (lineIdx < allSpans.length) {
+            const currentLine = allSpans[lineIdx];
+            if (charIdx < currentLine.length) {
+              currentLine[charIdx++].classList.add("visible");
+              setTimeout(reveal, charDelay);
+            } else {
+              lineIdx++;
+              charIdx = 0;
+              setTimeout(reveal, lineDelay);
+            }
+          }
+        }
+
+        setTimeout(reveal, 500);
       });
     </script>
   </body>
